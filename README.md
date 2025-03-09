@@ -10,10 +10,18 @@ Welcome to learn more information in [AutoMate](https://github.com/GML-FMGroup/A
 
 ## 🎥 Demo
 
+
+https://github.com/user-attachments/assets/2effe15b-e164-46d3-a779-df391514a182
+
+
+https://github.com/user-attachments/assets/9e094395-ba0e-4b6f-8d70-059b26a3c9e8
+
+
 <div style="display: flex; justify-content: space-between;">
-    <img src="./assets/AutoMate_Client_Planner.png" alt="Planner" width="49%">
-    <img src="./assets/AutoMate_Client_Workflow.png" alt="Workflow" width="49%">
+    <img src="assets/AutoMate_Client_Planner.png" alt="Planner" width="49%">
+    <img src="assets/AutoMate_Client_Workflow.png" alt="Workflow" width="49%">
 </div>
+
 
 ## 👨‍💻 Quickstart
 
