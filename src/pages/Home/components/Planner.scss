@@ -1,0 +1,75 @@
+.planner-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%; // Ensure the container takes full height
+
+    .middle-block {
+        flex-grow: 1;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: auto; // Use auto instead of scroll
+        padding: 30px;
+        background-color: #ffffff; // Light gray background
+        border-radius: 15px;
+    }
+
+    .bottom-block {
+        flex-shrink: 0; // Prevent shrinking
+        height: 130px; // Ensure fixed height
+        margin: 5px;
+        position: relative;
+        padding: 10px;
+        border: 1px solid #dcdcdc;
+        border-radius: 15px;
+        background-color: #f5f5f5;
+
+        .textarea {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important; // 确保不会有阴影边框
+            background-color: #f5f5f5;
+
+            &::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: #dcdcdc;
+                border-radius: 4px;
+
+                &:hover {
+                    background: #c0c0c0;
+                }
+            }
+        }
+
+        .sendButton {
+            background-color: #3a3a3a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.3s;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+
+            &:hover {
+                background-color: #2e2e2e;
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+}
