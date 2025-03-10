@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
 
 interface WebSocketMessage {
     intermediate_output: any;

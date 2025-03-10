@@ -5,7 +5,7 @@ import Planner from './components/Planner';
 import Workflow from './components/Workflow';
 import ConsoleBox from './components/ConsoleBox';
 import { WebSocketClient } from '../../apis';
-import { PROVIDERS, PLANNER_MODELS, EXECUTOR_MODELS } from '../../constants/modelOptions';
+import { PROVIDERS, PLANNER_MODELS, EXECUTOR_MODELS } from './modelOptions';
 
 
 const provider_options = PROVIDERS.map(value => ({ value, label: value }));
