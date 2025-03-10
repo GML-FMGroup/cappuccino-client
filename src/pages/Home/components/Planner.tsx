@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Planner.scss';
-import { Input, Button, Timeline, Result, Spin, message } from 'antd';
+import { Input, Button, Timeline, Result, Spin, notification } from 'antd';
 import { CheckCircleFilled, SmileOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -22,6 +22,7 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
     const [showResult, setShowResult] = useState(true);
     const [timelineItems, setTimelineItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [notificationHandler, contextHolder] = notification.useNotification();
 
     const updateTimeline = (tasks: string[]) => {
         if (tasks.length === 0) return;
@@ -87,7 +88,13 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
 
     const handleSend = async () => {
         if (!query.trim()){
-            message.warning('Please input query');
+            notificationHandler.warning({
+                message: 'Warning',
+                description: 'Please input query',
+                duration: 3,
+                showProgress: true,
+                placement: 'topLeft',
+            });
             return;
         } 
         setShowResult(false);
@@ -98,6 +105,7 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
 
     return (
         <div className="planner-container">
+            {contextHolder}
             <div className="middle-block">
                 {showResult ? (
                     <Result

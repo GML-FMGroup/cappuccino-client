@@ -1,15 +1,12 @@
 import './home.scss';
 import { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Input, Select, notification } from 'antd'; // Import Input, Select, and notification from antd
+import { Modal, Button, Input, Select, notification } from 'antd';
 import Planner from './components/Planner';
 import Workflow from './components/Workflow';
-import DialogBox from './components/DialogBox'; // Import DialogBox component
+import ConsoleBox from './components/ConsoleBox';
 import { WebSocketClient } from '../../apis';
 import { PROVIDERS, PLANNER_MODELS, EXECUTOR_MODELS } from '../../constants/modelOptions';
 
-interface PlannerRequest {
-    query: string;
-}
 
 const provider_options = PROVIDERS.map(value => ({ value, label: value }));
 const planner_model_options = PLANNER_MODELS.map(value => ({ value, label: value }));
@@ -31,6 +28,7 @@ const Home = () => {
     const [isImageLoading, setIsImageLoading] = useState<boolean>(true);
     const prevImageRef = useRef<string>('');
     const [connectionError, setConnectionError] = useState<string>('');
+    const [notificationHandler, contextHolder] = notification.useNotification();
 
     const [info, setInfo] = useState({
         planner_model: '',
@@ -42,8 +40,6 @@ const Home = () => {
         executor_api_key: '',
         executor_base_url: ''
     });
-
-    const [notificationHandler, contextHolder] = notification.useNotification();
 
     useEffect(() => {
         if (logContentRef.current) {
@@ -206,7 +202,7 @@ const Home = () => {
         setIsImageLoading(true);
     };
 
-    const handlePlannerSend = async (data: PlannerRequest) => {
+    const handlePlannerSend = async (data: { query: string}) => {
         if (!wsClientRef.current || !isConnected) {
             notificationHandler.error({
                 message: 'Connection Error',
@@ -332,7 +328,7 @@ const Home = () => {
                         <div className="window-title">Executor Console</div>
                         <div className='log-content' ref={logContentRef}>
                             {logs.map((item, index) => (
-                                <DialogBox key={index} message={item} />
+                                <ConsoleBox key={index} message={item} />
                             ))}
                         </div>
                     </div>

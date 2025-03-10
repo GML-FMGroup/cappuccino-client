@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Workflow.scss';
-import { Input, Button, Timeline, message } from 'antd';
+import { Input, Button, Timeline, notification } from 'antd';
 import { DeleteOutlined, CheckCircleFilled } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -16,13 +16,20 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
     const [inputValue, setInputValue] = useState('');
     const [timelineItems, setTimelineItems] = useState<any[]>([]);
     const [isSubmitted, setIsSubmitted] = useState(false); // New state to track if tasks have been submitted
+    const [notificationHandler, contextHolder] = notification.useNotification();
 
     const handleAddTask = () => {
         if (inputValue.trim()) {
             setTasks([...tasks, inputValue.trim()]);
             setInputValue('');
         } else {
-            message.warning('Task cannot be empty');
+            notificationHandler.warning({
+                message: 'Warning',
+                description: 'Task cannot be empty',
+                duration: 3,
+                showProgress: true,
+                placement: 'topLeft',
+            });
         }
     };
 
@@ -34,7 +41,13 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
 
     const handleSend = async () => {
         if (tasks.length === 0) {
-            message.warning('Please add at least one task');
+            notificationHandler.warning({
+                message: 'Warning',
+                description: 'Please add at least one task',
+                duration: 3,
+                showProgress: true,
+                placement: 'topLeft',
+            });
             return;
         }
 
@@ -42,9 +55,21 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
             try {
                 await onSend({ tasks });
                 setIsSubmitted(true); // Set submitted state to true after successful sending
-                message.success('Tasks sent successfully');
+                notificationHandler.success({
+                    message: 'Success',
+                    description: 'Tasks sent successfully',
+                    duration: 3,
+                    showProgress: true,
+                    placement: 'topLeft',
+                });
             } catch (error) {
-                message.error('Failed to send tasks');
+                notificationHandler.error({
+                    message: 'Error',
+                    description: 'Failed to send tasks',
+                    duration: 3,
+                    showProgress: true,
+                    placement: 'topLeft',
+                });
                 console.error(error);
             }
         } else {
@@ -54,12 +79,24 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
 
     const handleClearAllTasks = () => {
         if (tasks.length === 0) {
-            message.info('No tasks to clear');
+            notificationHandler.info({
+                message: 'Info',
+                description: 'No tasks to clear',
+                duration: 3,
+                showProgress: true,
+                placement: 'topLeft',
+            });
             return;
         }
 
         setTasks([]);
-        message.success('All tasks cleared');
+        notificationHandler.success({
+            message: 'Success',
+            description: 'All tasks cleared',
+            duration: 3,
+            showProgress: true,
+            placement: 'topLeft',
+        });
     };
 
     // Update timeline items when tasks change or submission status changes
@@ -137,6 +174,7 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
 
     return (
         <div className="workflow-container">
+            {contextHolder}
             <div className="task-list">
                 {tasks.length > 0 ? (
                     <Timeline items={timelineItems} />
