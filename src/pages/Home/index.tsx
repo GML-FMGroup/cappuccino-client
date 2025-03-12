@@ -6,7 +6,7 @@ import Workflow from './components/Workflow';
 import ConsoleBox from './components/ConsoleBox';
 import { WebSocketClient } from '../../apis';
 import { PROVIDERS, PLANNER_MODELS, EXECUTOR_MODELS } from './modelOptions';
-
+import { ApiFilled } from '@ant-design/icons';
 
 const provider_options = PROVIDERS.map(value => ({ value, label: value }));
 const planner_model_options = PLANNER_MODELS.map(value => ({ value, label: value }));
@@ -290,7 +290,7 @@ const Home = () => {
             {contextHolder}
             <div className="header">
                 <div className="header-left">
-                    AutoMate
+                    cappuccino
                 </div>
                 <div className="header-right">
                     {isConnected ? (
@@ -317,10 +317,7 @@ const Home = () => {
                                     }}
                                 />
                             ) : (
-                                <img 
-                                    src='AutoMate-logo.png' 
-                                    alt="AutoMate Logo" 
-                                />
+                                <ApiFilled style={{ fontSize: '48px', color: '#1890ff' }} />
                             )}
                         </div>
                     </div>
