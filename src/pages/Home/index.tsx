@@ -2,27 +2,26 @@ import './home.scss';
 import { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Input, Select, notification } from 'antd';
 import Planner from './components/Planner';
-import Workflow from './components/Workflow';
 import ConsoleBox from './components/ConsoleBox';
 import { WebSocketClient } from '../../apis';
-import { PROVIDERS, PLANNER_MODELS, EXECUTOR_MODELS } from './modelOptions';
+import { PROVIDERS, PLANNER_MODELS, DISPATCHER_MODELS, EXECUTOR_MODELS } from './modelOptions';
 import { ApiFilled } from '@ant-design/icons';
 
 const provider_options = PROVIDERS.map(value => ({ value, label: value }));
 const planner_model_options = PLANNER_MODELS.map(value => ({ value, label: value }));
+const dispatcher_model_options = DISPATCHER_MODELS.map(value => ({ value, label: value }));
 const executor_model_options = EXECUTOR_MODELS.map(value => ({ value, label: value }));
 
 const Home = () => {
     const [showConnectModal, setShowConnectModal] = useState(true);
     const [computerIP, setComputerIP] = useState('');
     const [computerToken, setComputerToken] = useState('');
-    const [showPlanner, setShowPlanner] = useState(true);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const logContentRef = useRef<HTMLDivElement>(null);
     const [isConnected, setIsConnected] = useState(false);
     const wsClientRef = useRef<WebSocketClient | null>(null);
-    const [logs, setLogs] = useState<string[]>([]);
-    const [plannerTasks, setPlannerTasks] = useState<string[]>([]);
+    const [subtasks, setSubtasks] = useState<object[]>([]);
+    const [tasks, setTasks] = useState<object[]>([]);
     const [curCompletedTask, setCurCompletedTask] = useState('');
     const [screenshotUrl, setScreenshotUrl] = useState<string>('');
     const [isImageLoading, setIsImageLoading] = useState<boolean>(true);
@@ -38,14 +37,18 @@ const Home = () => {
         executor_model: '',
         executor_provider: '',
         executor_api_key: '',
-        executor_base_url: ''
+        executor_base_url: '',
+        dispatcher_model: '',
+        dispatcher_provider: '',
+        dispatcher_api_key: '',
+        dispatcher_base_url: ''
     });
 
     useEffect(() => {
         if (logContentRef.current) {
             logContentRef.current.scrollTop = logContentRef.current.scrollHeight;
         }
-    }, [logs]);
+    }, [subtasks]);
 
     useEffect(() => {
         const storedInfo = localStorage.getItem('settingsInfo');
@@ -77,15 +80,23 @@ const Home = () => {
             wsClientRef.current.onMessage((data) => {
                 if (data.message === "Process processing") {
                     if (data.role === "planner" && data.intermediate_output?.tasks) {
-                        setPlannerTasks(data.intermediate_output.tasks);
-                    } else if (data.role === "executor" && data.intermediate_output?.actions) {
+                        setTasks(data.intermediate_output.tasks);
+                    } else if (data.role === "dispatcher" && data.intermediate_output?.subtasks) {
                         // Convert each action to a JSON string
-                        const actionLogs = data.intermediate_output.actions.map(
-                            (action: any) => JSON.stringify(action.arguments)
-                        );
-                        setLogs(prev => [...prev, ...actionLogs]);
-                        setCurCompletedTask(data.intermediate_output.task)
+                        setSubtasks(prev => [...prev, ...data.intermediate_output.subtasks]);
+                        setCurCompletedTask(data.intermediate_output.task.task);
                     }
+                }
+                else if (data.message === "Process complete") {
+                    setCurCompletedTask("Process complete");
+                } else if (data.message === "Process interruption") {
+                    notificationHandler.error({
+                        message: 'Process interruption',
+                        description: 'The process is interrupted. Please check the error details on the server.',
+                        duration: 0, // Set duration to 0 to make it persistent
+                        showProgress: true,
+                        placement: 'topLeft',
+                    });
                 }
             });
             
@@ -212,55 +223,22 @@ const Home = () => {
             });
             return;
         }
-        setLogs([]);
+        setSubtasks([]);
         try {
             await wsClientRef.current.sendAgentRequest({
-                agent_type: 'planner',
                 planner_model: info.planner_model,
                 planner_provider: info.planner_provider,
                 planner_api_key: info.planner_api_key,
                 planner_base_url: info.planner_base_url,
+                dispatcher_model: info.dispatcher_model,
+                dispatcher_provider: info.dispatcher_provider,
+                dispatcher_api_key: info.dispatcher_api_key,
+                dispatcher_base_url: info.dispatcher_base_url,
                 executor_model: info.executor_model,
                 executor_provider: info.executor_provider,
                 executor_api_key: info.executor_api_key,
                 executor_base_url: info.executor_base_url,
-                user_query: data.query,
-                user_tasks: [],
-            });
-        } catch (error) {
-            notificationHandler.error({
-                message: 'Request Failed',
-                description: error instanceof Error ? error.message : 'Failed to send request',
-                duration: 3,
-                placement: 'topLeft',
-            });
-        }
-    };
-
-    const handleWorkflowSend = async (data: { tasks: string[] }) => {
-        if (!wsClientRef.current || !isConnected) {
-            notificationHandler.error({
-                message: 'Connection Error',
-                description: 'Please connect to a computer first',
-                duration: 3,
-                placement: 'topLeft',
-            });
-            return;
-        }
-        setLogs([]);
-        try {
-            await wsClientRef.current.sendAgentRequest({
-                agent_type: 'workflow',
-                planner_model: info.planner_model,
-                planner_provider: info.planner_provider,
-                planner_api_key: info.planner_api_key,
-                planner_base_url: info.planner_base_url,
-                executor_model: info.executor_model,
-                executor_provider: info.executor_provider,
-                executor_api_key: info.executor_api_key,
-                executor_base_url: info.executor_base_url,
-                user_query: '',
-                user_tasks: data.tasks,
+                user_query: data.query
             });
         } catch (error) {
             notificationHandler.error({
@@ -322,22 +300,16 @@ const Home = () => {
                         </div>
                     </div>
                     <div className="log-window">
-                        <div className="window-title">Executor Console</div>
+                        <div className="window-title">Dispatcher Console</div>
                         <div className='log-content' ref={logContentRef}>
-                            {logs.map((item, index) => (
+                            {subtasks.map((item, index) => (
                                 <ConsoleBox key={index} message={item} />
                             ))}
                         </div>
                     </div>
                 </div>
                 <div className="main-right">
-                    <div className="window-title">Workspace - {showPlanner ? 'Planner' : 'Workflow'}</div>
-                    <button
-                        className="toggle-button"
-                        onClick={() => setShowPlanner(!showPlanner)}
-                    >
-                        {showPlanner ? 'Switch to Workflow' : 'Switch to Planner'}
-                    </button>
+                    <div className="window-title">Workspace - Planner</div>
                     <button
                         className="settings-button"
                         onClick={() => setShowSettingsModal(true)}
@@ -400,6 +372,46 @@ const Home = () => {
                                     placeholder="This parameter is required when you deploy locally"
                                 />
                             </label>
+                            <div className="section-title">Dispatcher Settings</div>
+                            <label>
+                                Dispatcher Model
+                                <Select
+                                    value={info.dispatcher_model}
+                                    onChange={(value) => handleSelectChange('dispatcher_model', value)}
+                                    variant="filled"
+                                    options={dispatcher_model_options}
+                                />
+                            </label>
+                            <label>
+                                Dispatcher Provider
+                                <Select
+                                    value={info.dispatcher_provider}
+                                    onChange={(value) => handleSelectChange('dispatcher_provider', value)}
+                                    variant="filled"
+                                    options={provider_options}
+                                />
+                            </label>
+                            <label>
+                                Dispatcher API Key
+                                <Input
+                                    type="text"
+                                    name="dispatcher_api_key"
+                                    value={info.dispatcher_api_key}
+                                    onChange={handleInputChange}
+                                    variant="filled"
+                                />
+                            </label>
+                            <label>
+                                Dispatcher Base URL
+                                <Input
+                                    type="text"
+                                    name="dispatcher_base_url"
+                                    value={info.dispatcher_base_url}
+                                    onChange={handleInputChange}
+                                    variant="filled"
+                                    placeholder="This parameter is required when you deploy locally"
+                                />
+                            </label>
                             <div className="section-title">Executor Settings</div>
                             <label>
                                 Executor Model
@@ -443,10 +455,7 @@ const Home = () => {
                         </div>
                     </Modal>
                     <div className="component-container" style={{ height: 'calc(100% - 50px)' }}>
-                        {showPlanner ? 
-                            <Planner onSend={handlePlannerSend} tasks={plannerTasks} curCompletedTask={curCompletedTask}/> : 
-                            <Workflow onSend={handleWorkflowSend} curCompletedTask={curCompletedTask} />
-                        }
+                        <Planner onSend={handlePlannerSend} tasks={tasks} curCompletedTask={curCompletedTask}/> 
                     </div>
                 </div>
             </div>

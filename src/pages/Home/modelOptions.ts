@@ -11,6 +11,11 @@ export const PLANNER_MODELS = [
   'deepseek-v3'
 ];
 
+export const DISPATCHER_MODELS = [
+  'qwen-vl-max-2025-01-25',
+  'gpt-4o',
+];
+
 export const EXECUTOR_MODELS = [
   'qwen2.5-vl-7b-instruct'
 ];

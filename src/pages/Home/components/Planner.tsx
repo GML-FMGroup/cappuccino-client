@@ -7,14 +7,14 @@ const { TextArea } = Input;
 
 interface PlannerProps {
     onSend: (data: { query: string }) => Promise<void>;
-    tasks: string[];
+    tasks: { task: string, prev_required: boolean }[];
     curCompletedTask: string;
 }
 
 const completionStep = {
     color: '#00CCFF',
     dot: <CheckCircleFilled />,
-    children: 'Processing complete',
+    children: 'Process complete',
 };
 
 const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) => {
@@ -24,12 +24,12 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
     const [isLoading, setIsLoading] = useState(false);
     const [notificationHandler, contextHolder] = notification.useNotification();
 
-    const updateTimeline = (tasks: string[]) => {
+    const updateTimeline = (tasks: { task: string, prev_required: boolean }[]) => {
         if (tasks.length === 0) return;
 
         const items = tasks.map(task => ({
             color: 'gray',
-            children: task
+            children: task.task
         }));
         
         // Add completion step with gray color initially
@@ -46,32 +46,28 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
         setTimelineItems(prevItems => {
             // Create a copy to modify
             const newItems = [...prevItems];
-            
-            // Find the index of the completed task
+
+            // Find the first gray-colored task that matches the current completed task
             const completedIndex = newItems.findIndex(item => 
-                item.children === curCompletedTask
+                item.children === curCompletedTask && item.color === 'gray'
             );
-            
+
             if (completedIndex !== -1) {
                 // Highlight the completed task
                 newItems[completedIndex] = { 
                     ...newItems[completedIndex], 
                     color: undefined // Remove gray color to show default color
                 };
-                
-                // Check if this is the last task (excluding the completion step)
-                const isLastTask = completedIndex === newItems.length - 2;
-                
-                // If it's the last task, also highlight the completion step
-                if (isLastTask) {
-                    // Get the last item (completion step) and highlight it
-                    const lastIndex = newItems.length - 1;
-                    newItems[lastIndex] = {
-                        ...completionStep // Use the original completionStep with its color
-                    };
-                }
             }
-            
+
+            if (curCompletedTask === "Process complete") {
+                // Get the last item (completion step) and highlight it
+                const lastIndex = newItems.length - 1;
+                newItems[lastIndex] = {
+                    ...completionStep // Use the original completionStep with its color
+                };
+            }
+
             return newItems;
         });
     };

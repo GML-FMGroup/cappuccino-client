@@ -124,7 +124,7 @@ const Workflow: React.FC<WorkflowProps> = ({ onSend, curCompletedTask }) => {
             items.push({
                 color: 'gray',
                 dot: <CheckCircleFilled />,
-                children: 'Processing complete',
+                children: 'Process complete',
             });
         }
 
