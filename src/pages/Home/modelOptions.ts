@@ -14,6 +14,7 @@ export const PLANNER_MODELS = [
 export const DISPATCHER_MODELS = [
   'qwen-vl-max-2025-01-25',
   'gpt-4o',
+  'qwen2.5-vl-72b-instruct'
 ];
 
 export const EXECUTOR_MODELS = [
