@@ -7,7 +7,7 @@ const { TextArea } = Input;
 
 interface PlannerProps {
     onSend: (data: { query: string }) => Promise<void>;
-    tasks: { task: string, prev_required: boolean }[];
+    tasks: string[];
     curCompletedTask: string;
 }
 
@@ -24,12 +24,12 @@ const Planner: React.FC<PlannerProps> = ({ onSend, tasks, curCompletedTask }) =>
     const [isLoading, setIsLoading] = useState(false);
     const [notificationHandler, contextHolder] = notification.useNotification();
 
-    const updateTimeline = (tasks: { task: string, prev_required: boolean }[]) => {
+    const updateTimeline = (tasks: string[]) => {
         if (tasks.length === 0) return;
 
         const items = tasks.map(task => ({
             color: 'gray',
-            children: task.task
+            children: task
         }));
         
         // Add completion step with gray color initially

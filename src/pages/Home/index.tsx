@@ -21,7 +21,7 @@ const Home = () => {
     const [isConnected, setIsConnected] = useState(false);
     const wsClientRef = useRef<WebSocketClient | null>(null);
     const [subtasks, setSubtasks] = useState<object[]>([]);
-    const [tasks, setTasks] = useState<object[]>([]);
+    const [tasks, setTasks] = useState<string[]>([]);
     const [curCompletedTask, setCurCompletedTask] = useState('');
     const [screenshotUrl, setScreenshotUrl] = useState<string>('');
     const [isImageLoading, setIsImageLoading] = useState<boolean>(true);
@@ -84,7 +84,7 @@ const Home = () => {
                     } else if (data.role === "dispatcher" && data.intermediate_output?.subtasks) {
                         // Convert each action to a JSON string
                         setSubtasks(prev => [...prev, ...data.intermediate_output.subtasks]);
-                        setCurCompletedTask(data.intermediate_output.task.task);
+                        setCurCompletedTask(data.intermediate_output.task);
                     }
                 }
                 else if (data.message === "Process complete") {
